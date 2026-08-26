@@ -10,7 +10,7 @@ if (!p && location.pathname.startsWith('/p/')) {
 }
 
 if (!p) {
-  titleEl.textContent = 'post';
+  titleEl.textContent = encodeURIComponent(p);
   contentEl.textContent = 'no post specified, please <a href="/blog.html">visit blog</a>';
 } else {
   try {

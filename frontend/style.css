@@ -1,4 +1,5 @@
 @import url("https://fontsapi.zeoseven.com/572/main/result.css");
+@import url("https://fontsapi.zeoseven.com/442/main/result.css");
 
 * {
     margin: 0;
@@ -20,10 +21,12 @@ body {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     line-height: 1.5em;
+    font-family: "Unifont", monospace;
 }
 
-.term-frame * {
-    font-family: "Unifont", monospace;
+.term-frame hr.splitter {
+     border: none;
+     border-top: 4px double #444;
 }
 
 .term-frame:focus {
@@ -47,10 +50,17 @@ body {
 }
 
 .term-frame a::before {
-    content: ":[link]:";
+    content: "[:link:]";
     display: inline-block;
     font-size: 0.6em;
     padding: 0 0.2em;
+}
+
+/* external links get a distinct prefix */
+.term-frame a[href^="http://"]::before,
+.term-frame a[href^="https://"]::before,
+.term-frame a[href^="//"]::before {
+    content: "[*link*]";
 }
 
 .term-frame a::after {
@@ -69,6 +79,14 @@ body {
 .content h4 { font-size: 1.1em; margin: 0.6em 0 0.2em; }
 .content h5, .content h6 { font-size: 1em; margin: 0.5em 0 0.2em; }
 .content p { margin: 0.5em 0; }
+.content code,
+.content pre.src,
+.content pre.src code {
+    user-select: text;
+    font-size: 0.9em;
+    font-family: "Maple Mono NF CN", monospace;
+    font-weight: normal;
+}
 .content pre.src {
     white-space: pre;
     overflow-wrap: normal;
