@@ -18,11 +18,11 @@ func (s *server) buildRSS(base string) []byte {
 	}
 	var b strings.Builder
 	b.WriteString(xml.Header)
-	b.WriteString(`<rss version="2.0"><channel>`)
-	b.WriteString("<title>" + xmlEscape("zal blog") + "</title>")
-	b.WriteString("<link>" + xmlEscape(base+"/") + "</link>")
-	b.WriteString("<description>" + xmlEscape("zal blog - personal notes") + "</description>")
-	b.WriteString("<language>zh-CN</language>")
+	b.WriteString("<rss version=\"2.0\"><channel>" +
+		"<title>" + xmlEscape("zal blog") + "</title>" +
+		"<link>" + xmlEscape(base+"/") + "</link>" +
+		"<description>" + xmlEscape("zal blog - personal notes") + "</description>" +
+		"<language>zh-CN</language>")
 
 	for _, p := range posts {
 		_, htmlOut, err := s.loadPost(p.Path)
@@ -31,15 +31,15 @@ func (s *server) buildRSS(base string) []byte {
 			continue
 		}
 		link := base + "/posts/" + p.Path + ".html"
-		b.WriteString("<item>")
-		b.WriteString("<title>" + xmlEscape(p.Title) + "</title>")
-		b.WriteString("<link>" + xmlEscape(link) + "</link>")
-		b.WriteString("<guid>" + xmlEscape(link) + "</guid>")
+		item := "<item>" +
+			"<title>" + xmlEscape(p.Title) + "</title>" +
+			"<link>" + xmlEscape(link) + "</link>" +
+			"<guid>" + xmlEscape(link) + "</guid>"
 		if t, ok := parsePostTime(p); ok {
-			b.WriteString("<pubDate>" + xmlEscape(t.UTC().Format(time.RFC1123Z)) + "</pubDate>")
+			item += "<pubDate>" + xmlEscape(t.UTC().Format(time.RFC1123Z)) + "</pubDate>"
 		}
-		b.WriteString("<description><![CDATA[" + cdataSafe(htmlOut) + "]]></description>")
-		b.WriteString("</item>")
+		item += "<description><![CDATA[" + cdataSafe(htmlOut) + "]]></description></item>"
+		b.WriteString(item)
 	}
 	b.WriteString("</channel></rss>")
 	return []byte(b.String())
@@ -51,7 +51,9 @@ func (s *server) handleRSS(w http.ResponseWriter, r *http.Request) {
 		base = "https://" + r.Host
 	}
 	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
-	w.Write(s.buildRSS(base))
+	if _, err := w.Write(s.buildRSS(base)); err != nil {
+		log.Printf("rss: write: %v", err)
+	}
 }
 
 func xmlEscape(s string) string {

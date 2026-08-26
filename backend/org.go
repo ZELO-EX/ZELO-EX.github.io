@@ -444,7 +444,9 @@ func (r *orgRenderer) restoreProtected(s string) string {
 	return protectedRe.ReplaceAllStringFunc(s, func(m string) string {
 		sub := protectedRe.FindStringSubmatch(m)
 		var idx int
-		fmt.Sscanf(sub[1], "%d", &idx)
+		if _, err := fmt.Sscanf(sub[1], "%d", &idx); err != nil {
+			return m
+		}
 		if idx >= 0 && idx < len(r.prot.html) {
 			return r.prot.html[idx]
 		}
@@ -513,9 +515,7 @@ func emphasisPass(s string, marker byte, open, close string) string {
 			i++
 			continue
 		}
-		b.WriteString(open)
-		b.WriteString(content)
-		b.WriteString(close)
+		b.WriteString(open + content + close)
 		i = j + 1
 	}
 	return b.String()

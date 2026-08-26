@@ -15,8 +15,7 @@ import (
 // buildPostPage renders a standalone post page. Content is raw HTML
 // (already rendered by the org renderer); everything else is escaped.
 func buildPostPage(meta PostMeta, content string, prev, next *postSummary) string {
-	var b strings.Builder
-	b.WriteString(`<!DOCTYPE html>
+	page := `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8"/>
@@ -31,19 +30,17 @@ func buildPostPage(meta PostMeta, content string, prev, next *postSummary) strin
 <a href="/">back index</a>
 <a href="/blog.html">visit blog</a>
 <a href="/tags.html">tags</a>
-<a href="/rss.xml">rss</a>
-<div class="content">` + content + `</div>`)
-	nav := postNavHTML(meta, prev, next)
-	if nav != "" {
-		b.WriteString(`
-<div class="content">` + nav + `</div>`)
+<div class="content">` + content + `</div>`
+	if nav := postNavHTML(meta, prev, next); nav != "" {
+		page += `
+<div class="content">` + nav + `</div>`
 	}
-	b.WriteString(`
+	page += `
 </div>
 </body>
 </html>
-`)
-	return b.String()
+`
+	return page
 }
 
 // postNavHTML builds the tags + newer/older navigation block.
@@ -86,7 +83,9 @@ func (s *server) handlePostPage(w http.ResponseWriter, r *http.Request) {
 	}
 	prev, next := findNav(posts, p)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(buildPostPage(meta, content, prev, next)))
+	if _, err := w.Write([]byte(buildPostPage(meta, content, prev, next))); err != nil {
+		log.Printf("handlePostPage: write: %v", err)
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -191,15 +190,13 @@ func copyAssets(srcRoot, dstRoot string) error {
 		if err != nil {
 			return err
 		}
-		defer in.Close()
+		defer func() { _ = in.Close() }()
 		out, err := os.Create(dst)
 		if err != nil {
 			return err
 		}
-		defer out.Close()
-		if _, err := io.Copy(out, in); err != nil {
-			return err
-		}
-		return nil
+		defer func() { _ = out.Close() }()
+		_, err = io.Copy(out, in)
+		return err
 	})
 }

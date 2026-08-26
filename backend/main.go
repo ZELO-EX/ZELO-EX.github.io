@@ -408,17 +408,13 @@ func (s *server) handleAbout(w http.ResponseWriter, r *http.Request) {
 // static files
 // ---------------------------------------------------------------------------
 
-var frontendPageRe = regexp.MustCompile(`^/(index|blog|post|tags|about|404)\.html$`)
-
 func (s *server) handleStatic(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Path
 	switch {
 	case p == "/":
 		s.serveFile(w, r, filepath.Join(s.frontendRoot, "index.html"))
-	case p == "/blog" || p == "/tags" || p == "/about" || p == "/post":
+	case p == "/blog" || p == "/tags" || p == "/about":
 		s.serveFile(w, r, filepath.Join(s.frontendRoot, strings.TrimPrefix(p, "/")+".html"))
-	case strings.HasPrefix(p, "/p/") && len(p) > 3:
-		s.serveFile(w, r, filepath.Join(s.frontendRoot, "post.html"))
 	case strings.HasPrefix(p, "/t/") && len(p) > 3:
 		s.serveFile(w, r, filepath.Join(s.frontendRoot, "tags.html"))
 	case strings.HasPrefix(p, "/posts/") && len(p) > 8:
@@ -431,8 +427,6 @@ func (s *server) handleStatic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		s.serveFile(w, r, full)
-	case frontendPageRe.MatchString(p):
-		s.serveFile(w, r, filepath.Join(s.frontendRoot, strings.TrimPrefix(p, "/")))
 	default:
 		rel := filepath.FromSlash(strings.TrimPrefix(p, "/"))
 		full, ok := safeJoin(s.frontendRoot, rel)
@@ -454,7 +448,7 @@ func (s *server) serveFile(w http.ResponseWriter, r *http.Request, file string) 
 		s.notFound(w, r)
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	st, err := f.Stat()
 	if err != nil || st.IsDir() {
 		s.notFound(w, r)
@@ -471,7 +465,9 @@ func (s *server) notFound(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	w.Write(body)
+	if _, err := w.Write(body); err != nil {
+		log.Printf("notFound: write: %v", err)
+	}
 }
 
 // safeJoin joins root and rel ensuring the result stays inside root.
