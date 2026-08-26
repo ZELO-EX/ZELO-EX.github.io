@@ -6,18 +6,23 @@ const q = new URLSearchParams(location.search);
 const active = q.get('t');
 
 try {
-  const data = await getJSON('/api/tags');
-  box.innerHTML = data.tags.length
-    ? data.tags.map(t =>
+  const [tagsData, postsData] = await Promise.all([
+    getJSON('/tags.json'),
+    getJSON('/posts.json'),
+  ]);
+
+  box.innerHTML = tagsData.tags.length
+    ? tagsData.tags.map(t =>
         `<a href="/tags.html?t=${encodeURIComponent(t.tag)}">#${esc(t.tag)}</a>` +
         `<span class="dim">(${t.count})</span>`
       ).join('\n')
     : 'no tags yet';
 
   if (active) {
-    const posts = await getJSON('/api/posts?tag=' + encodeURIComponent(active));
-    postsBox.innerHTML = '\n# ' + esc(active) + '\n' + (posts.posts.length
-      ? posts.posts.map(p =>
+    const filtered = postsData.posts.filter(p =>
+      p.tags.some(t => t.toLowerCase() === active.toLowerCase()));
+    postsBox.innerHTML = '\n# ' + esc(active) + '\n' + (filtered.length
+      ? filtered.map(p =>
           `<a href="${postLink(p.path)}">${esc(p.title)}</a>` +
           `<span class="dim">${esc(p.date)}</span>`
         ).join('\n')

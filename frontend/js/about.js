@@ -4,7 +4,7 @@ const titleEl = document.getElementById('about-title');
 const contentEl = document.getElementById('about');
 
 try {
-  const d = await getJSON('/api/about');
+  const d = await getJSON('/about.json');
   document.title = d.title + ' - zal blog';
   titleEl.textContent = d.title;
   contentEl.innerHTML = d.html;

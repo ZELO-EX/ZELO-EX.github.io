@@ -8,5 +8,13 @@ backend/backend
 .idea/
 .vscode/
 
+# generated static output
+frontend/posts/
+frontend/posts.json
+frontend/tags.json
+frontend/about.json
+frontend/rss.xml
+frontend/assets/
+
 # private things
 tmp/

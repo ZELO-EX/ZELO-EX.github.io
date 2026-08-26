@@ -8,19 +8,14 @@ import (
 	"time"
 )
 
-// handleRSS builds an RSS 2.0 feed manually: this Go toolchain's
+// buildRSS renders an RSS 2.0 feed manually: this Go toolchain's
 // encoding/xml does not support the ",cdata" field option.
-func (s *server) handleRSS(w http.ResponseWriter, r *http.Request) {
+func (s *server) buildRSS(base string) []byte {
 	posts, err := s.scanPosts()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, err.Error())
-		return
+		log.Printf("rss: scan: %v", err)
+		return nil
 	}
-	base := "http://" + r.Host
-	if r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") {
-		base = "https://" + r.Host
-	}
-
 	var b strings.Builder
 	b.WriteString(xml.Header)
 	b.WriteString(`<rss version="2.0"><channel>`)
@@ -35,7 +30,7 @@ func (s *server) handleRSS(w http.ResponseWriter, r *http.Request) {
 			log.Printf("rss: skip %s: %v", p.Path, err)
 			continue
 		}
-		link := base + "/p/" + p.Path
+		link := base + "/posts/" + p.Path + ".html"
 		b.WriteString("<item>")
 		b.WriteString("<title>" + xmlEscape(p.Title) + "</title>")
 		b.WriteString("<link>" + xmlEscape(link) + "</link>")
@@ -47,9 +42,16 @@ func (s *server) handleRSS(w http.ResponseWriter, r *http.Request) {
 		b.WriteString("</item>")
 	}
 	b.WriteString("</channel></rss>")
+	return []byte(b.String())
+}
 
+func (s *server) handleRSS(w http.ResponseWriter, r *http.Request) {
+	base := "http://" + r.Host
+	if r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") {
+		base = "https://" + r.Host
+	}
 	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
-	w.Write([]byte(b.String()))
+	w.Write(s.buildRSS(base))
 }
 
 func xmlEscape(s string) string {

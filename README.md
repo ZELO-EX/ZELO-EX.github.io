@@ -1,18 +1,38 @@
 # zal-blog
 
-个人博客（界面英文、内容中文）：终端复古 TUI 风格，Go 后端提供 API，前端静态页面 + JS 渲染，文章以 org-mode 格式撰写。
+个人博客（界面英文、内容中文）：终端复古 TUI 风格，文章以 org-mode 格式撰写。
+Go 程序负责把 org 渲染成静态 HTML/JSON，产物可直接托管到 GitHub Pages。
 
-## 运行
+## 两种运行方式
 
 ```sh
-# 在仓库根目录（或 backend/ 目录下）执行均可
-cd backend && go run .
+cd backend
+
+# 1. 开发模式：本地动态服务器（改文件刷新即生效）
+go run . serve
 # 打开 http://localhost:54345
+
+# 2. 静态生成：把 org 渲染成静态站点写入 frontend/（默认动作）
+go run .                  # 等价于 go run . generate
+go run . generate https://example.com   # 自定义站点地址（影响 rss.xml 里的链接）
 ```
 
-端口默认 `54345`，可用环境变量 `PORT` 覆盖。`BLOG_DIR` / `FRONTEND_DIR` 可覆盖内容与前端目录（默认 `blog` / `frontend`）。
+`SITE_BASE` 环境变量也可设置站点地址。端口默认 `54345`，`PORT` 可覆盖；`BLOG_DIR` / `FRONTEND_DIR` 可覆盖内容与前端目录（默认 `blog` / `frontend`）。
 
-无任何缓存：修改 org 文件或前端文件后刷新即可看到效果。
+## 静态产物结构（generate 后）
+
+```
+frontend/
+├── index.html / blog.html / tags.html / about.html / 404.html
+├── posts.json                文章列表（前端 JS 读取）
+├── tags.json                 标签统计
+├── about.json                渲染后的关于页
+├── rss.xml                   RSS 订阅
+├── assets/                   从 blog/assets/ 复制
+└── posts/YYYY/MM/slug.html   每篇文章一个完整 HTML 页
+```
+
+整个 `frontend/` 就是一个可独立托管的静态站点（GitHub Pages 等）。
 
 ## 写文章
 
@@ -21,7 +41,7 @@ cd backend && go run .
   - `#+TITLE: 标题`（必填，缺省取第一个 `*` 标题）
   - `#+DATE: 2025-08-25`（缺省取路径中的年月）
   - `#+TAGS: :tag1:tag2:`（可省略）
-  - `#+DRAFT: true`（草稿：不出现在列表/标签/RSS 中，可直接访问预览）
+  - `#+DRAFT: true`（草稿：不生成静态页，不出现在列表/标签/RSS 中；仅在开发模式下可直接访问预览）
 - 文章按日期倒序排列
 
 ## 图片
@@ -29,6 +49,7 @@ cd backend && go run .
 图片放在 `blog/assets/` 下，目录层级与文章镜像对应：
 文章 `blog/2025/08/x.org` 的图片放 `blog/assets/2025/08/pic.png`，
 文中引用 `[[file:pic.png]]` 或 `[[file:pic.png][alt 文字]]`。
+生成时自动复制到 `frontend/assets/`。
 
 ## 支持的 org 语法
 
@@ -42,15 +63,21 @@ cd backend && go run .
 | 路径 | 说明 |
 |------|------|
 | `/` | 首页 |
-| `/blog.html` `/blog` | 博客列表 |
-| `/post.html?p=2025/08/slug` 或 `/p/2025/08/slug` | 文章详情 |
-| `/tags.html` `/tags`（`?t=tag` 过滤） | 标签 |
-| `/about.html` `/about` | 关于（渲染 `blog/about.org`） |
+| `/blog.html` | 博客列表（读 `posts.json`） |
+| `/posts/2025/08/slug.html` | 文章详情（静态生成） |
+| `/tags.html`（`?t=tag` 过滤） | 标签（读 `tags.json` + `posts.json`） |
+| `/about.html` | 关于（读 `about.json`） |
 | `/rss.xml` | RSS 订阅 |
 | `/assets/...` | 图片资源 |
 
-API：`/api/posts`、`/api/post?p=...`、`/api/tags`、`/api/about`。
+开发模式服务器额外提供 `/api/posts`、`/api/post?p=...`、`/api/tags`、`/api/about` 调试用。
 
 ## 部署
 
-规划中：完善后部署到 GitHub Pages（CI 生成静态站点）或自建服务器（如腾讯云）。
+`frontend/` 为纯静态站点：
+
+- **GitHub Pages**：推送 `frontend/` 内容到 Pages 仓库（本仓库模块名即
+  `zelo-ex.github.io`，可直接作为用户 Pages 仓库使用）
+- **自建服务器**（如腾讯云）：把 `frontend/` 交给任意静态文件服务器（nginx 等）
+
+CI 自动生成 + 部署：规划中。

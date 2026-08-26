@@ -18,7 +18,7 @@ export function esc(s) {
 }
 
 export function postLink(path) {
-  return '/post.html?p=' + encodeURIComponent(path);
+  return '/posts/' + encodeURIComponent(path) + '.html';
 }
 
 export function tagsHTML(tags) {

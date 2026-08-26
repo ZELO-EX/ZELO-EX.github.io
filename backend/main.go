@@ -21,16 +21,39 @@ func main() {
 
 	s := &server{blogRoot: blogRoot, frontendRoot: frontendRoot}
 
+	cmd := "generate" // default: build static site into frontend/
+	if len(os.Args) > 1 && os.Args[1] == "serve" {
+		cmd = "serve"
+	}
+	switch cmd {
+	case "serve":
+		s.serve(port)
+	default:
+		base := getenv("SITE_BASE", "https://zelo-ex.github.io")
+		if len(os.Args) > 1 && os.Args[1] == "generate" && len(os.Args) > 2 {
+			base = os.Args[2]
+		}
+		if err := s.generate(base); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("generated static site into %s (base=%s)", frontendRoot, base)
+	}
+}
+
+func (s *server) serve(port string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/posts", s.handlePosts)
 	mux.HandleFunc("GET /api/post", s.handlePost)
 	mux.HandleFunc("GET /api/tags", s.handleTags)
 	mux.HandleFunc("GET /api/about", s.handleAbout)
+	mux.HandleFunc("GET /posts.json", s.handlePosts)
+	mux.HandleFunc("GET /tags.json", s.handleTags)
+	mux.HandleFunc("GET /about.json", s.handleAbout)
 	mux.HandleFunc("GET /rss.xml", s.handleRSS)
 	mux.HandleFunc("/", s.handleStatic)
 
 	handler := noStore(logRequests(mux))
-	log.Printf("zal-blog listening on http://localhost:%s (blog=%s frontend=%s)", port, blogRoot, frontendRoot)
+	log.Printf("zal-blog listening on http://localhost:%s (blog=%s frontend=%s)", port, s.blogRoot, s.frontendRoot)
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal(err)
 	}
@@ -264,30 +287,38 @@ func (s *server) handlePost(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	prev, next := findNav(posts, p)
 	detail := struct {
 		postSummary
 		HTML string       `json:"html"`
 		Prev *postSummary `json:"prev"`
 		Next *postSummary `json:"next"`
-	}{postSummary: summarize(meta), HTML: htmlOut}
+	}{postSummary: summarize(meta), HTML: htmlOut, Prev: prev, Next: next}
+	writeJSON(w, http.StatusOK, detail)
+}
+
+// findNav returns the newer (prev) and older (next) neighbours of path
+// within the date-descending published list.
+func findNav(posts []PostMeta, path string) (prev, next *postSummary) {
 	idx := -1
 	for i, q := range posts {
-		if q.Path == meta.Path {
+		if q.Path == path {
 			idx = i
 			break
 		}
 	}
-	if idx >= 0 {
-		if idx > 0 {
-			ps := summarize(posts[idx-1])
-			detail.Prev = &ps // newer
-		}
-		if idx < len(posts)-1 {
-			ps := summarize(posts[idx+1])
-			detail.Next = &ps // older
-		}
+	if idx < 0 {
+		return nil, nil
 	}
-	writeJSON(w, http.StatusOK, detail)
+	if idx > 0 {
+		ps := summarize(posts[idx-1])
+		prev = &ps // newer
+	}
+	if idx < len(posts)-1 {
+		ps := summarize(posts[idx+1])
+		next = &ps // older
+	}
+	return prev, next
 }
 
 // loadPost reads and renders a single post (works for drafts too, for preview).
@@ -309,21 +340,17 @@ func (s *server) loadPost(slug string) (PostMeta, string, error) {
 	return meta, htmlOut, nil
 }
 
-func (s *server) handleTags(w http.ResponseWriter, r *http.Request) {
-	posts, err := s.scanPosts()
-	if err != nil {
-		writeErr(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+type tagCount struct {
+	Tag   string `json:"tag"`
+	Count int    `json:"count"`
+}
+
+func buildTags(posts []PostMeta) []tagCount {
 	counts := map[string]int{}
 	for _, p := range posts {
 		for _, t := range p.Tags {
 			counts[t]++
 		}
-	}
-	type tagCount struct {
-		Tag   string `json:"tag"`
-		Count int    `json:"count"`
 	}
 	list := make([]tagCount, 0, len(counts))
 	for t, c := range counts {
@@ -335,14 +362,24 @@ func (s *server) handleTags(w http.ResponseWriter, r *http.Request) {
 		}
 		return list[a].Tag < list[b].Tag
 	})
-	writeJSON(w, http.StatusOK, map[string]any{"tags": list})
+	return list
 }
 
-func (s *server) handleAbout(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleTags(w http.ResponseWriter, r *http.Request) {
+	posts, err := s.scanPosts()
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"tags": buildTags(posts)})
+}
+
+// buildAbout renders blog/about.org into the {title, html} shape used by
+// both the API and the static generator.
+func (s *server) buildAbout() (map[string]string, error) {
 	src, err := os.ReadFile(filepath.Join(s.blogRoot, "about.org"))
 	if err != nil {
-		writeErr(w, http.StatusNotFound, "about.org not found")
-		return
+		return nil, err
 	}
 	meta := parseMeta(string(src))
 	title := meta.Title
@@ -352,10 +389,19 @@ func (s *server) handleAbout(w http.ResponseWriter, r *http.Request) {
 	if title == "" || title == "about" {
 		title = "About"
 	}
-	writeJSON(w, http.StatusOK, map[string]string{
+	return map[string]string{
 		"title": title,
 		"html":  renderOrg(string(src), ""),
-	})
+	}, nil
+}
+
+func (s *server) handleAbout(w http.ResponseWriter, r *http.Request) {
+	about, err := s.buildAbout()
+	if err != nil {
+		writeErr(w, http.StatusNotFound, "about.org not found")
+		return
+	}
+	writeJSON(w, http.StatusOK, about)
 }
 
 // ---------------------------------------------------------------------------
@@ -375,6 +421,8 @@ func (s *server) handleStatic(w http.ResponseWriter, r *http.Request) {
 		s.serveFile(w, r, filepath.Join(s.frontendRoot, "post.html"))
 	case strings.HasPrefix(p, "/t/") && len(p) > 3:
 		s.serveFile(w, r, filepath.Join(s.frontendRoot, "tags.html"))
+	case strings.HasPrefix(p, "/posts/") && len(p) > 8:
+		s.handlePostPage(w, r)
 	case strings.HasPrefix(p, "/assets/"):
 		rel := filepath.FromSlash(strings.TrimPrefix(p, "/assets/"))
 		full, ok := safeJoin(filepath.Join(s.blogRoot, "assets"), rel)
