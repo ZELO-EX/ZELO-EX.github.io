@@ -1,0 +1,71 @@
+#+TITLE: 给计算机新生的入门建议
+#+DATE: 2026-08-26
+#+TAGS: :cs:guide:study:
+
+* 编程
+** 环境配置
++ GNU/Linux及其发行版
+  + Ubuntu(新手入门建议)
+  + Debian
+  + Fedora
+  + ...
++ 命令行及操作符
+  + sudo(谨慎操作)
+  + simp: echo, cd, rm, mkdir, ls, ll, cat, touch, pwd, man, etc.
+  + hard: tar, unzip, chmod, mv, cp, ps, grep, awk, export, etc.
+  + 逻辑运算符(&&, ||), 管道符(|), 重定向符号(>, <, >>, etc.)
++ 包管理
+  + Linux: apt, yum, dnf, flatpak, aur, etc.
+  + Mac: homebrew
+  + Windows: scoop, winget
++ 编辑器
+  + 通用: VSCode
+  + Linux发行版: Vim, NeoVim, Emacs, Nano, etc.
++ 工具链
+  + git
+  + curl/wget
++ 其它
+  + systemctl操作系统进程服务
+** 编程语言
++ C语言/Python(二选一进行入门)
++ 兴趣越接近底层（内核、单片机等），建议从C语言入门
++ 兴趣越接近现代（人工智能、视觉交互等），建议从Python入门
++ 啥也不知道的，看自己专业去挑一个学
+** 一些建议
++ 后面所有建议都基于学会搜索与提问，
+  且提问的前提是以你当前的能力不足以找到任何解决方案
+  + 选择性使用AI工具，不依赖结论而是主动查询其结论的根源
+  + 善用搜索工具，如Bing，Google，etc.
+  + 大多数你能找到的软件包或源代码都有相关官方文档，你碰到问题时不妨试一试
+    “官方文档->权威书籍/非官方文档->博客/问答->教学视频->论坛提问”的路径
++ 你应该拥有更好的资源，而不是去跟在队伍后面学大家都知道的东西
++ 如果发现有一个课程你可能感兴趣的，不妨先看一下课程附带的一些资源，
+  然后听上几节课，不合适的话尽早退出，不产生额外的沉没成本
++ 计算机是一门重实操的科目，哪怕你是计科也要去实践，而不是读理论；
+  但不能只会实操而不去学理论，项目的长远发展很大程度决定于你学到的理论
+** 可参考学习资源
+*** Beginners
++ 提问的智慧: https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md
+  （知乎搬运）: https://zhuanlan.zhihu.com/p/664680014
+  # 学习过程跑不开的一个话题，也几乎涵盖全部我想说的话
++ 菜鸟教程: https://www.runoob.com/
++ w3schools教程: https://www.w3ccoo.com/
+  # 这两个都是学习编程语法用的网站，浏览一遍基本可以快速上手语法，
+  # 但理论基础等方面不保证，二选一使用即可
++ Free Code Camp:
+  https://www.freecodecamp.org/chinese/
+  https://space.bilibili.com/335505768/
+  # 偶然刷到的，虽然官网学习资源多，但其视频资源也和网站资源不争上下，
+  # 但是在B站更新的有点慢了，建议也可以看一些熟肉视频
++ Roadmap.sh: https://roadmap.sh/
+  # 算是比较有参考的网站，各个学习线路图还是比较详细的，
+  # 但是由于操作稍有麻烦且暂时用不上而放弃使用
+*** Advanced
++ MDN Web Docs: https://developer.mozilla.org/zh-CN/
+  # 比较好的Web开发文档，HTML、CSS、JS方面很详细，可参考
++ CppReference: https://cppreference.cn/w/
+  # cpp非官方中文文档，平时用来查询一些标准或是学习STL很有用，
+  # 但这只是非官方文档，不要当作权威标准看待
++ Google Style Guide: https://google.github.io/styleguide/
++ Google开源项目风格指南: https://zh-google-styleguide.readthedocs.io/en/latest/
+  # Google开源项目风格指南以及中文版，或许有点学习的价值(?
