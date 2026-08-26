@@ -170,7 +170,7 @@ var (
 	ulRe        = regexp.MustCompile(`^(\s*)([-+])\s+(.*)$`)
 	olRe        = regexp.MustCompile(`^(\s*)(\d+)[.)]\s+(.*)$`)
 	tableLineRe = regexp.MustCompile(`^\s*\|`)
-	todoDoneRe  = regexp.MustCompile(`^(\w+)\s+`)
+	todoDoneRe  = regexp.MustCompile(`^(TODO|DONE)\s+`)
 )
 
 func isTableLine(line string) bool { return tableLineRe.MatchString(line) }
