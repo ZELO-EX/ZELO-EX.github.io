@@ -458,6 +458,7 @@ func (s *server) serveFile(w http.ResponseWriter, r *http.Request, file string) 
 }
 
 func (s *server) notFound(w http.ResponseWriter, r *http.Request) {
+	_ = r
 	body, err := os.ReadFile(filepath.Join(s.frontendRoot, "404.html"))
 	if err != nil {
 		http.Error(w, "404 page not found", http.StatusNotFound)

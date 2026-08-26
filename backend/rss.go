@@ -18,11 +18,13 @@ func (s *server) buildRSS(base string) []byte {
 	}
 	var b strings.Builder
 	b.WriteString(xml.Header)
-	b.WriteString("<rss version=\"2.0\"><channel>" +
-		"<title>" + xmlEscape("zal blog") + "</title>" +
-		"<link>" + xmlEscape(base+"/") + "</link>" +
-		"<description>" + xmlEscape("zal blog - personal notes") + "</description>" +
-		"<language>zh-CN</language>")
+	b.WriteString("<rss version=\"2.0\"><channel><title>")
+	b.WriteString(xmlEscape("zal blog"))
+	b.WriteString("</title><link>")
+	b.WriteString(xmlEscape(base + "/"))
+	b.WriteString("</link><description>")
+	b.WriteString(xmlEscape("zal blog - personal notes"))
+	b.WriteString("</description><language>zh-CN</language>")
 
 	for _, p := range posts {
 		_, htmlOut, err := s.loadPost(p.Path)

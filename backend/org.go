@@ -26,8 +26,7 @@ var draftBareRe = regexp.MustCompile(`(?m)^#\+DRAFT[ \t]*$`)
 // parseMeta extracts #+KEYWORD lines from an org source.
 func parseMeta(src string) PostMeta {
 	meta := PostMeta{}
-	lines := strings.Split(src, "\n")
-	for _, line := range lines {
+	for line := range strings.SplitSeq(src, "\n") {
 		m := keywordRe.FindStringSubmatch(line)
 		if m == nil {
 			continue
@@ -211,10 +210,7 @@ func isBlockStart(line string) bool {
 
 func (r *orgRenderer) heading(line string) string {
 	m := headingRe.FindStringSubmatch(line)
-	level := len(m[1]) + 1 // * -> h2, ***** -> h6
-	if level > 6 {
-		level = 6
-	}
+	level := min(6, len(m[1])+1) // * -> h2, ***** -> h6
 	return fmt.Sprintf("<h%d>%s</h%d>", level, r.inline(m[2]), level)
 }
 
@@ -248,7 +244,13 @@ func (r *orgRenderer) table(lines []string) string {
 		}
 		b.WriteString("<tr>")
 		for _, cell := range row {
-			b.WriteString("<" + tag + ">" + r.inline(strings.TrimSpace(cell)) + "</" + tag + ">")
+			b.WriteString("<")
+			b.WriteString(tag)
+			b.WriteString(">")
+			b.WriteString(r.inline(strings.TrimSpace(cell)))
+			b.WriteString("</")
+			b.WriteString(tag)
+			b.WriteString(">")
 		}
 		b.WriteString("</tr>")
 	}
@@ -349,11 +351,15 @@ func (r *orgRenderer) renderList(items []*listItem) string {
 		if items[i].ordered {
 			tag = "ol"
 		}
-		b.WriteString("<" + tag + ">")
+		b.WriteString("<")
+		b.WriteString(tag)
+		b.WriteString(">")
 		for k := i; k < j; k++ {
 			b.WriteString(r.renderItem(items[k]))
 		}
-		b.WriteString("</" + tag + ">")
+		b.WriteString("</")
+		b.WriteString(tag)
+		b.WriteString(">")
 		i = j
 	}
 	return b.String()
@@ -515,7 +521,9 @@ func emphasisPass(s string, marker byte, open, close string) string {
 			i++
 			continue
 		}
-		b.WriteString(open + content + close)
+		b.WriteString(open)
+		b.WriteString(content)
+		b.WriteString(close)
 		i = j + 1
 	}
 	return b.String()
