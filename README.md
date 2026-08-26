@@ -80,4 +80,12 @@ frontend/
   `zelo-ex.github.io`，可直接作为用户 Pages 仓库使用）
 - **自建服务器**（如腾讯云）：把 `frontend/` 交给任意静态文件服务器（nginx 等）
 
-CI 自动生成 + 部署：规划中。
+### GitHub Actions 自动部署
+
+`.github/workflows/deploy.yml`：push 到 main 时自动跑测试、生成静态站点并部署到
+GitHub Pages；PR 只跑测试。首次使用需要在仓库 Settings → Pages 里把
+Source 设为 **GitHub Actions**。
+
+注意：站点内链接使用根相对路径（如 `/posts/...`），适用于部署在域名根部的
+用户 Pages 仓库（zelo-ex.github.io）。若改用项目仓库（子路径如
+`/zal-blog/`），需要生成器支持 basepath（未实现）。

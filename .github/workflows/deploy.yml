@@ -1,0 +1,53 @@
+name: build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: vet and test
+        working-directory: backend
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: generate static site
+        working-directory: backend
+        run: go run . generate https://zelo-ex.github.io
+
+      - name: upload pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: configure pages
+        uses: actions/configure-pages@v5
+
+      - name: deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v4
