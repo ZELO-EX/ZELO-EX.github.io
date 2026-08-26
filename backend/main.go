@@ -124,7 +124,7 @@ func writeErr(w http.ResponseWriter, status int, msg string) {
 var postPathRe = regexp.MustCompile(`^\d{4}/\d{2}/[A-Za-z0-9._-]+\.org$`)
 
 // scanPosts walks blogRoot for published posts (YYYY/MM/name.org).
-// Drafts (#+DRAFT) are excluded.
+// Drafts (*.sec.org) are excluded.
 func (s *server) scanPosts() ([]PostMeta, error) {
 	var posts []PostMeta
 	err := filepath.WalkDir(s.blogRoot, func(p string, d os.DirEntry, err error) error {
@@ -152,6 +152,9 @@ func (s *server) scanPosts() ([]PostMeta, error) {
 		if strings.HasPrefix(base, ".") || strings.HasPrefix(base, "_") {
 			return nil
 		}
+		if strings.HasSuffix(base, ".sec.org") {
+			return nil
+		}
 		src, err := os.ReadFile(p)
 		if err != nil {
 			return err
@@ -159,9 +162,6 @@ func (s *server) scanPosts() ([]PostMeta, error) {
 		meta := parseMeta(string(src))
 		meta.Path = strings.TrimSuffix(rel, ".org")
 		meta.fillFallbacks()
-		if meta.Draft {
-			return nil
-		}
 		posts = append(posts, meta)
 		return nil
 	})

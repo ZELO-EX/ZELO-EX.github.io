@@ -54,10 +54,10 @@ func postNavHTML(meta PostMeta, prev, next *postSummary) string {
 		lines = append(lines, "tags: "+strings.Join(parts, " "))
 	}
 	if prev != nil {
-		lines = append(lines, `<a href="/posts/`+prev.Path+`.html"><- newer: `+html.EscapeString(prev.Title)+`</a>`)
+		lines = append(lines, `<a href="/posts/`+prev.Path+`.html">`+html.EscapeString(prev.Title)+` <- next</a>`)
 	}
 	if next != nil {
-		lines = append(lines, `<a href="/posts/`+next.Path+`.html">older ->: `+html.EscapeString(next.Title)+`</a>`)
+		lines = append(lines, `<a href="/posts/`+next.Path+`.html">prev -> `+html.EscapeString(next.Title)+`</a>`)
 	}
 	return strings.Join(lines, "\n")
 }

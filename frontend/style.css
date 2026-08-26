@@ -20,7 +20,7 @@ body {
     user-select: none;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    line-height: 1.5em;
+    line-height: 1.6em;
     font-family: "Unifont", monospace;
 }
 
@@ -43,6 +43,7 @@ body {
     background: #222;
     text-decoration: none;
     margin: 0 0.2em;
+    padding: 0.2em 0;
 }
 
 .term-frame a:hover {
@@ -115,6 +116,9 @@ body {
 .content li { display: list-item; }
 .content img { max-width: 100%; height: auto; }
 .content hr { border: none; border-top: 1px dashed #555; margin: 0.8em 0; }
+
+.content .status_todo { background: #400; padding: 0 0.5em; }
+.content .status_done { background: #040; padding: 0 0.5em; }
 
 #post-nav { margin-top: 1em; }
 

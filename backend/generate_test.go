@@ -13,8 +13,8 @@ func TestPostNavHTML(t *testing.T) {
 	got := postNavHTML(meta, prev, next)
 	for _, want := range []string{
 		`<a href="/tags.html?t=go">#go</a>`,
-		`<a href="/posts/2025/08/newer.html"><- newer: Newer</a>`,
-		`<a href="/posts/2025/08/older.html">older ->: Older</a>`,
+		`<a href="/posts/2025/08/newer.html">Newer <- next</a>`,
+		`<a href="/posts/2025/08/older.html">prev -> Older</a>`,
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("postNavHTML missing %q in %q", want, got)

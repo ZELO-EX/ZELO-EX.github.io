@@ -18,3 +18,4 @@ frontend/assets/
 
 # private things
 tmp/
+*.sec.org

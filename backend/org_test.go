@@ -9,7 +9,6 @@ func TestParseMeta(t *testing.T) {
 	src := `#+TITLE: My Post
 #+DATE: 2025-08-25
 #+TAGS: :go:blog:
-#+DRAFT: true
 
 content`
 	m := parseMeta(src)
@@ -21,18 +20,6 @@ content`
 	}
 	if len(m.Tags) != 2 || m.Tags[0] != "go" || m.Tags[1] != "blog" {
 		t.Errorf("Tags = %v", m.Tags)
-	}
-	if !m.Draft {
-		t.Error("Draft should be true")
-	}
-}
-
-func TestParseMetaDraftBare(t *testing.T) {
-	if !parseMeta("#+DRAFT\n").Draft {
-		t.Error("bare #+DRAFT should set Draft")
-	}
-	if parseMeta("#+DRAFT: false\n").Draft {
-		t.Error("#+DRAFT: false should not set Draft")
 	}
 }
 

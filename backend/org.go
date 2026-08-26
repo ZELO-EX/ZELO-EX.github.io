@@ -6,7 +6,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 )
 
@@ -16,12 +15,9 @@ type PostMeta struct {
 	Title string   `json:"title"`
 	Date  string   `json:"date"`
 	Tags  []string `json:"tags"`
-	Draft bool     `json:"draft,omitempty"`
 }
 
 var keywordRe = regexp.MustCompile(`^#\+(\w+):[ \t]*(.*)$`)
-
-var draftBareRe = regexp.MustCompile(`(?m)^#\+DRAFT[ \t]*$`)
 
 // parseMeta extracts #+KEYWORD lines from an org source.
 func parseMeta(src string) PostMeta {
@@ -40,31 +36,18 @@ func parseMeta(src string) PostMeta {
 			meta.Date = val
 		case "TAGS":
 			meta.Tags = parseTags(val)
-		case "DRAFT":
-			meta.Draft = !isFalsey(val)
 		}
-	}
-	if draftBareRe.MatchString(src) {
-		meta.Draft = true
 	}
 	return meta
 }
 
-func isFalsey(s string) bool {
-	switch strings.ToLower(strings.TrimSpace(s)) {
-	case "", "false", "f", "no", "nil", "0":
-		return true
-	}
-	return false
-}
-
-// parseTags accepts ":a:b:", "a b", "a, b", ":a: b" and mixtures.
+// parseTags accepts ":a:b:" (org style, colon-delimited).
 func parseTags(val string) []string {
 	val = strings.TrimSpace(val)
 	val = strings.TrimPrefix(val, ":")
 	val = strings.TrimSuffix(val, ":")
 	fields := strings.FieldsFunc(val, func(r rune) bool {
-		return r == ':' || r == ',' || unicode.IsSpace(r)
+		return r == ':'
 	})
 	var tags []string
 	seen := map[string]bool{}
@@ -187,6 +170,7 @@ var (
 	ulRe        = regexp.MustCompile(`^(\s*)([-+])\s+(.*)$`)
 	olRe        = regexp.MustCompile(`^(\s*)(\d+)[.)]\s+(.*)$`)
 	tableLineRe = regexp.MustCompile(`^\s*\|`)
+	todoDoneRe  = regexp.MustCompile(`^(\w+)\s+`)
 )
 
 func isTableLine(line string) bool { return tableLineRe.MatchString(line) }
@@ -210,8 +194,16 @@ func isBlockStart(line string) bool {
 
 func (r *orgRenderer) heading(line string) string {
 	m := headingRe.FindStringSubmatch(line)
+	t := todoDoneRe.FindStringSubmatch(m[2])
 	level := min(6, len(m[1])+1) // * -> h2, ***** -> h6
-	return fmt.Sprintf("<h%d>%s</h%d>", level, r.inline(m[2]), level)
+	prefix := ""
+	if len(t) >= 1 {
+		prefix = fmt.Sprintf("<span class=\"status_%s\">%s</span>",
+			strings.ToLower(t[1]), t[1])
+		m[2], _ = strings.CutPrefix(m[2], t[1])
+	}
+	return fmt.Sprintf("<h%d>%s%s</h%d>",
+		level, prefix, r.inline(m[2]), level)
 }
 
 // ---------------------------------------------------------------------------
