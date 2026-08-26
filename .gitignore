@@ -1,0 +1,12 @@
+# compiled binaries
+backend/zelo-ex.github.io
+backend/backend
+*.exe
+
+# editor
+*.swp
+.idea/
+.vscode/
+
+# private things
+tmp/

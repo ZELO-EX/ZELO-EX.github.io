@@ -1,0 +1,8 @@
+#+TITLE: Draft Example
+#+DATE: 2025-08-26
+#+TAGS: :misc:
+#+DRAFT: true
+
+This post is a draft. It stays hidden from the blog list, tags and rss,
+but is still reachable directly at /post.html?p=2025/08/draft-example
+for preview.
