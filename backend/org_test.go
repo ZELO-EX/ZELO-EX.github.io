@@ -140,7 +140,15 @@ func TestImagePath(t *testing.T) {
 
 func TestParagraphJoin(t *testing.T) {
 	got := renderOrg("line one\nline two\n", "")
-	want := "<p>line one line two</p>"
+	want := "<p>line one\nline two</p>"
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
+}
+
+func TestListContinuationKeepsBreak(t *testing.T) {
+	got := renderOrg("- item\n  continued line\n", "")
+	want := "<ul><li>item\ncontinued line</li></ul>"
 	if got != want {
 		t.Errorf("got %q want %q", got, want)
 	}

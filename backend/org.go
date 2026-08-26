@@ -152,7 +152,7 @@ func renderOrg(src, postDir string) string {
 				para = append(para, strings.TrimSpace(lines[i]))
 				i++
 			}
-			out = append(out, "<p>"+r.inline(strings.Join(para, " "))+"</p>")
+			out = append(out, "<p>"+r.inline(strings.Join(para, "\n"))+"</p>")
 		}
 	}
 	return strings.Join(out, "")
@@ -313,7 +313,7 @@ func collectList(lines []string, start int) ([]*listItem, int) {
 			len(line)-len(strings.TrimLeft(line, " \t")) > items[len(items)-1].indent {
 			// continuation line of the last item
 			last := items[len(items)-1]
-			last.content += " " + trimmed
+			last.content += "\n" + trimmed
 			i++
 			continue
 		}

@@ -73,13 +73,15 @@ func getenv(key, fallback string) string {
 
 // resolveDir allows running the binary both from the repo root
 // (go run ./backend) and from inside backend/ (cd backend && go run .).
+// Symlinks are resolved to their real path: filepath.WalkDir does not
+// traverse a symlinked root, which would break post scanning.
 func resolveDir(name string) string {
-	if _, err := os.Stat(name); err == nil {
-		return name
+	if resolved, err := filepath.EvalSymlinks(name); err == nil {
+		return resolved
 	}
 	if alt := filepath.Join("..", name); alt != "" {
-		if _, err := os.Stat(alt); err == nil {
-			return alt
+		if resolved, err := filepath.EvalSymlinks(alt); err == nil {
+			return resolved
 		}
 	}
 	return name
