@@ -39,8 +39,9 @@ func TestInlineMarkup(t *testing.T) {
 		{"+strike+", "<p><del>strike</del></p>"},
 		{"~code~", "<p><code>code</code></p>"},
 		{"=code2=", "<p><code>code2</code></p>"},
-		{"[[https://example.com][text]]", `<p><a href="https://example.com">text</a></p>`},
-		{"see https://example.com now", `<p>see <a href="https://example.com">https://example.com</a> now</p>`},
+		{"[[https://example.com][text]]", `<p><a href="https://example.com" target="_blank">text</a></p>`},
+		{"see https://example.com now", `<p>see <a href="https://example.com" target="_blank">https://example.com</a> now</p>`},
+		{"[[/example][text]]", `<p><a href="/example">text</a></p>`},
 		{"<script>", "<p>&lt;script&gt;</p>"},
 	}
 	for _, c := range cases {
@@ -70,7 +71,7 @@ func TestChineseEmphasisWithSpace(t *testing.T) {
 func TestSrcBlock(t *testing.T) {
 	in := "#+begin_src go\nfunc f() {}\n#+end_src\n"
 	got := renderOrg(in, "")
-	want := `<pre class="src"><code class="language-go">func f() {}</code></pre>`
+	want := `<details><summary>Code<button class="copy-code">copy</button></summary><pre class="src"><code class="language-go">func f() {}</code></pre></details>`
 	if got != want {
 		t.Errorf("got %q want %q", got, want)
 	}
@@ -143,7 +144,7 @@ func TestListContinuationKeepsBreak(t *testing.T) {
 
 func TestURLTrailingPunct(t *testing.T) {
 	got := renderOrg("(https://example.com).", "")
-	want := `<p>(<a href="https://example.com">https://example.com</a>).</p>`
+	want := `<p>(<a href="https://example.com" target="_blank">https://example.com</a>).</p>`
 	if got != want {
 		t.Errorf("got %q want %q", got, want)
 	}

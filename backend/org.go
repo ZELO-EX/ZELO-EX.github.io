@@ -435,8 +435,13 @@ func (r *orgRenderer) protectLinks(s string) string {
 	s = urlRe.ReplaceAllStringFunc(s, func(m string) string {
 		u := strings.TrimRight(m, ".,;:!?)]}")
 		rest := m[len(u):]
+		openNewWindow := ""
+		if strings.HasPrefix(u, "http://") ||
+			strings.HasPrefix(u, "https://") {
+			openNewWindow = ` target="_blank"`
+		}
 		r.prot.html = append(r.prot.html,
-			`<a href="`+u+`" target="_blank">`+u+`</a>`)
+			`<a href="`+u+`"`+openNewWindow+`>`+u+`</a>`)
 		return fmt.Sprintf("\x01%d\x01", len(r.prot.html)-1) + rest
 	})
 	return s
@@ -473,7 +478,12 @@ func (r *orgRenderer) linkHTML(target, desc string) string {
 	if text == "" {
 		text = target
 	}
-	return `<a href="` + target + `">` + text + `</a>`
+	openNewWindow := ""
+	if strings.HasPrefix(target, "http://") ||
+		strings.HasPrefix(target, "https://") {
+		openNewWindow = ` target="_blank"`
+	}
+	return `<a href="` + target + `"` + openNewWindow + `>` + text + `</a>`
 }
 
 // assetPath resolves a file: reference relative to the post's directory.
