@@ -161,7 +161,10 @@ func srcBlock(block []string, lang string) string {
 	if lang != "" {
 		class = ` class="language-` + html.EscapeString(lang) + `"`
 	}
-	return `<pre class="src"><code` + class + `>` + html.EscapeString(content) + `</code></pre>`
+	return `<details><summary>Code<button class="copy-code">copy</button>` +
+		`</summary><pre class="src"><code` + class + `>` +
+		html.EscapeString(content) +
+		`</code></pre></details>`
 }
 
 var (
@@ -432,7 +435,8 @@ func (r *orgRenderer) protectLinks(s string) string {
 	s = urlRe.ReplaceAllStringFunc(s, func(m string) string {
 		u := strings.TrimRight(m, ".,;:!?)]}")
 		rest := m[len(u):]
-		r.prot.html = append(r.prot.html, `<a href="`+u+`">`+u+`</a>`)
+		r.prot.html = append(r.prot.html,
+			`<a href="`+u+`" target="_blank">`+u+`</a>`)
 		return fmt.Sprintf("\x01%d\x01", len(r.prot.html)-1) + rest
 	})
 	return s
@@ -543,5 +547,6 @@ func isWordRune(r rune) bool {
 	return r == '_' ||
 		(r >= '0' && r <= '9') ||
 		(r >= 'a' && r <= 'z') ||
-		(r >= 'A' && r <= 'Z')
+		(r >= 'A' && r <= 'Z') ||
+		(r > 127)
 }

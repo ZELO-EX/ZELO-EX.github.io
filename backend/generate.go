@@ -37,6 +37,7 @@ func buildPostPage(meta PostMeta, content string, prev, next *postSummary) strin
 	}
 	page += `
 </div>
+<script src="/js/post.js"></script>
 </body>
 </html>
 `

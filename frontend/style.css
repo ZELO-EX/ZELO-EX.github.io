@@ -94,8 +94,7 @@ body {
     overflow-x: auto;
     background: #0a0a0a;
     border: 1px solid #333;
-    padding: 0.5em;
-    margin: 0.5em 0;
+    padding: 0.5em 0;
 }
 .content code { background: #222; }
 .content pre.src code { background: none; }
@@ -104,6 +103,32 @@ body {
     padding-left: 1em;
     border-left: 2px solid #555;
     color: #aaa;
+}
+.content details {
+    background: #222;
+}
+.content details summary {
+    display: grid;
+    grid-template-columns: min-content min-content auto;
+    list-style: none;
+    align-items: center;
+    border: 0;
+}
+.content details[open] summary::before {
+    content: "-";
+    padding: 0 0.2em;
+}
+.content details summary::before {
+    content: "+";
+    padding: 0 0.2em;
+}
+.content details button.copy-code {
+    border: 2px #000 solid;
+    background: #444;
+    padding: 0.2em;
+    margin: 0 0.5em;
+    color: #fff;
+    justify-self: right;
 }
 .content table { border-collapse: collapse; margin: 0.5em 0; }
 .content th, .content td {
