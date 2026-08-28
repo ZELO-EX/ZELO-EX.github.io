@@ -526,14 +526,167 @@ https://www.luogu.com.cn/problem/P5318
 #+end_src
 
 ** BFS/flood fill
-*** TODO P1443 马的遍历
+*** DONE P1443 马的遍历
 https://www.luogu.com.cn/problem/P1443
+#+begin_src cpp
+  // 题意误解性可能有点大，比较好理解的应该是如下：
+  // 输入分别为 棋盘的高 棋盘的宽 马所在的纵坐标 马所在的横坐标
 
-*** TODO P1451 求细胞数量
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  #define vci vector<int>
+  vector<vci> mp;
+  queue<vci> q;
+
+  vector<vci> steps{
+      {1, 2}, {1, -2},
+      {-1, 2}, {-1, -2},
+      {2, 1}, {2, -1},
+      {-2, 1}, {-2, -1}
+  };
+
+  int main() {
+      int h, w, y, x; cin >> h >> w >> y >> x;
+  	// 读取输入
+  	--y, --x;
+  	// 换成x:0-m, y:0-n
+  	mp.resize(h, vci(w, -1));
+  	// 初始化大小与内容
+  	mp[y][x] = 0;
+  	q.push(vci{y, x});
+  	// 设置马的起点
+  	while (!q.empty()) {
+  		vci p = q.front(); q.pop();
+  		y = p[0], x = p[1];
+  		// 取出队列元素
+  		for(vci &v : steps) {
+  			int cy = y + v[0], cx = x + v[1];
+  			// 计算跳一步后的新位置
+  			if(0 <= cy && cy < h && 0 <= cx && cx < w && mp[cy][cx] == -1) {
+  				// 如果在矩阵内且未经过，则放入队列并标记
+  				// 由于BFS的层序性质，在矩阵内的已标记元素总是最小
+  				mp[cy][cx] = mp[y][x] + 1;
+  				q.push(vci{cy, cx});
+  			}
+  		}
+  	}
+  	for(vci &v : mp) {
+  		for(int &i : v) {
+  			cout << i << " ";
+  		}
+  		cout << "\n";
+  	}
+  	// 输出矩阵并做换行处理
+      return 0;
+  }
+
+#+end_src
+
+*** DONE P1451 求细胞数量
 https://www.luogu.com.cn/problem/P1451
+#+begin_src cpp
+  #include <bits/stdc++.h>
+  using namespace std;
 
-*** TODO P1162 填涂颜色
+  #define vci vector<int>
+  vector<vci> dirs{
+      {-1, 0}, {1, 0},
+      {0, -1}, {0, 1}
+  };
+  // 定义方向
+
+  int main() {
+      int n, m; cin >> n >> m;
+      vector<string> mp(n);
+      for(string &s : mp) cin >> s;
+      // 读入数据
+      vector<vector<bool>> visit(n, vector<bool>(m, false));
+      // 标记是否为细胞的一部分
+      queue<vci> q;
+      int cnt = 0;
+      for(int y = 0; y < n; y ++) {
+          for(int x = 0; x < m; x ++) {
+              if(visit[y][x] || mp[y][x] == '0') continue;
+  	    // 已标记或非细胞则跳过
+              visit[y][x] = true;
+              q.push(vci{y, x});
+              while(q.size()) {
+                  vci v = q.front(); q.pop();
+                  for(vci &dir : dirs) {
+                      int cy = v[0] + dir[0], cx = v[1] + dir[1];
+                      if(0 <= cx && cx < m && 0 <= cy && cy < n && 
+  		       !visit[cy][cx] && mp[cy][cx] != '0') {
+  		      // 对于每个方向，如果未被标记且作为细胞一部分
+  		      // 则做标记并插入队列
+                          visit[cy][cx] = true;
+                          q.push(vci{cy, cx});
+                      }
+                  }
+              }
+              cnt ++;
+  	    // 遍历完细胞后直接加一即可，因为
+  	    // 不会再次遍历到已被标记完的细胞
+          }
+      }
+      cout << cnt << "\n";
+      return 0;
+  }
+#+end_src
+
+*** DONE P1162 填涂颜色
 https://www.luogu.com.cn/problem/P1162
+#+begin_src cpp
+  // 此处可注意到，把连接边界的0标记为2比把闭合圈内的0标记为2更简便
+  
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  #define vci vector<int>
+  vector<vci> dirs{
+      {-1, 0}, {1, 0},
+      {0, -1}, {0, 1}
+  };
+
+  int main() {
+      int n; cin >> n;
+      vector<vci> mp(n, vci(n, 0));
+      for(vci &s : mp) for(int &i : s) cin >> i;
+      queue<vci> q;
+      auto bfs = [&](int y, int x) {
+          mp[y][x] = 2; q.push(vci{y, x});
+          while(q.size()) {
+              vci v = q.front(); q.pop();
+              for(vci &dir : dirs) {
+                  int cy = v[0] + dir[0], cx = v[1] + dir[1];
+                  if(0 <= cy && cy < n && 0 <= cx && cx < n && !mp[cy][cx]) {
+                      mp[cy][cx] = 2; q.push(vci{cy, cx});
+                  }
+              }
+          }
+  	// 为连接边界的0标记为2，方便后续操作
+      };
+      // 写好需要用的BFS Lambda
+      for(int i = 0; i < n; i ++) {
+          if(!mp[0][i]) bfs(0, i);
+          if(!mp[n - 1][i]) bfs(n - 1, i);
+      }
+      for(int i = 0; i < n; i ++) {
+          if(!mp[i][0]) bfs(i, 0);
+          if(!mp[i][n - 1]) bfs(i, n - 1);
+      }
+      // 对在边界上的每一个0做一次BFS
+      for(vci &v : mp) {
+          for(int &i : v) {
+              cout << 2 - i << " ";
+  	    // 全部做2-i操作，1保持不变，
+  	    // 原来在边界的“2”改为0，不在边界的“0”改为2
+          }
+          cout << "\n";
+      }
+      return 0;
+  }
+#+end_src
 
 ** BFS最短路
 *** TODO P1135 奇怪的电梯
