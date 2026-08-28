@@ -262,11 +262,78 @@ https://www.luogu.com.cn/problem/P1616
 ** 最长上升子序列
 *** TODO P1091 [NOIP 2004 提高组] 合唱队形
 https://www.luogu.com.cn/problem/P1091
++ 最长上升子序列（O(N^2)情况）
+#+begin_src cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  int main() {
+      int n; cin >> n;
+      vector<int> v(n);
+      for(int &i : v) cin >> i;
+      vector<int> dpl(n), dpr(n);
+      for(int i = 0; i < n; i ++) {
+          dpl[i] = 1;
+  	// 自身也算是一个上升/下降子序列
+          for(int j = 0; j < i; j ++) {
+              if(v[i] > v[j]) dpl[i] = max(dpl[i], dpl[j] + 1);
+  	    // 如果自身大于另一个数，判断先前比较的上升子序列长度
+  	    // 与加入当前数后的整个上升子序列长度，更新更大者
+          }
+      }
+      // 求最长上升子序列
+      for(int i = n - 1; i >= 0; i --) {
+          dpr[i] = 1;
+          for(int j = n - 1; j > i; j --) {
+              if(v[i] > v[j]) dpr[i] = max(dpr[i], dpr[j] + 1);
+          }
+      }
+      // 求最长下降子序列
+      int mn = n;
+      for(int i = 0; i < n; i ++) {
+          mn = min(mn, n - (dpl[i] + dpr[i] - 1));
+      }
+      // 找出最少可出列人数
+      cout << mn << "\n";
+      return 0;
+  }
+#+end_src
 
 ** 区间DP
 *** TODO P1775 石子合并（弱化版）
 https://www.luogu.com.cn/problem/P1775
+#+begin_src cpp
+  #include <bits/stdc++.h>
+  using namespace std;
 
+  int main() {
+      int n; cin >> n;
+      vector<int> v(n);
+      for(int &i : v) cin >> i;
+      vector<vector<int>> dp(n, vector<int>(n, INT_MAX));
+      // 初始化dp数组，元素均为最大值，方便后续处理
+      vector<int> sum(n, v[0]);
+      dp[0][0] = 0;
+      for(int i = 1; i < n; i ++) 
+          sum[i] = sum[i - 1] + v[i], dp[i][i] = 0;
+      // 初始化前缀和，对角线处dp设为0
+      // 因为自身的代价为0
+      for(int l = 2; l <= n; l ++) {
+          for(int i = 0; i <= n - l; i ++) {
+              int j = i + l - 1;
+  	    // 先按长度遍历，后按序号遍历
+              for(int k = i; k < j; k ++) {
+                  dp[i][j] = min(dp[i][j],
+                                 dp[i][k] + dp[k + 1][j] + (sum[j] - sum[i - 1]));
+  		// 切分两部分进行比较，保存更小的
+              }
+          }
+      }
+      cout << dp[0][n - 1] << "\n";
+      // 输出0到n-1的最小代价
+      return 0;
+  }
+#+end_src
 
 * 树
 
