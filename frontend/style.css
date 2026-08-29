@@ -17,7 +17,6 @@ body {
     background: #000;
     color: #fff;
     position: relative;
-    user-select: none;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     line-height: 1.6em;
@@ -83,7 +82,6 @@ body {
 .content code,
 .content pre.src,
 .content pre.src code {
-    user-select: text;
     font-size: 0.9em;
     font-family: "Maple Mono NF CN", monospace;
     font-weight: normal;

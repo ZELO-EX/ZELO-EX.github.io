@@ -1,1 +1,26 @@
-* About Me
+
+* Intro
+
++ 平台名 ~ZELO_EX/ZaL的平淡日常~
++ 常用ID ~zal-dev/zelo-ex~
++ 19岁
++ 正在GZUS就读大二
++ 平时很懒，但不知道懒在哪个方面去了
+
+* Abilities
+
++ 计算机科学：
+  + 计算机组成原理
++ 编程语言（按掌握程度）：
+  + Go
+  + C,C++
+  + Python
+  + HTML,CSS,JS
+  + Scheme,Emacs Lisp
+
+* Output
+
+#+begin_quote
+仅仅是一个普通人的自言自语......
+也仅仅是在孤僻的技术路上，不温不火地走着......
+#+end_quote

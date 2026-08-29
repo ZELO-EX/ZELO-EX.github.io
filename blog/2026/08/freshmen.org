@@ -2,6 +2,11 @@
 #+DATE: 2026-08-26
 #+TAGS: :cs:guide:study:
 
+#+begin_quote
+由于主播懒得思考怎么写这些博客，
+于是干脆列成列表了，可根据感兴趣内容进行学习
+#+end_quote
+
 * 编程
 ** 环境配置
 + GNU/Linux及其发行版
