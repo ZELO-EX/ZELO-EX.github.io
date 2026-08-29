@@ -260,7 +260,7 @@ https://www.luogu.com.cn/problem/P1616
 #+end_src
 
 ** 最长上升子序列
-*** TODO P1091 [NOIP 2004 提高组] 合唱队形
+*** DONE P1091 [NOIP 2004 提高组] 合唱队形
 https://www.luogu.com.cn/problem/P1091
 + 最长上升子序列（O(N^2)情况）
 #+begin_src cpp
@@ -300,7 +300,7 @@ https://www.luogu.com.cn/problem/P1091
 #+end_src
 
 ** 区间DP
-*** TODO P1775 石子合并（弱化版）
+*** DONE P1775 石子合并（弱化版）
 https://www.luogu.com.cn/problem/P1775
 #+begin_src cpp
   #include <bits/stdc++.h>
@@ -756,11 +756,155 @@ https://www.luogu.com.cn/problem/P1162
 #+end_src
 
 ** BFS最短路
-*** TODO P1135 奇怪的电梯
+*** DONE P1135 奇怪的电梯
 https://www.luogu.com.cn/problem/P1135
+#+begin_src cpp
+  #include <bits/stdc++.h>
+  using namespace std;
 
-*** TODO P1332 血色先锋队
+  int main() {
+      int n, a, b; cin >> n >> a >> b;
+      vector<int> k(n + 1);
+      vector<bool> visit(n + 1, false);
+      for(int i = 1; i <= n; i ++) cin >> k[i];
+      // 读入输入
+      queue<pair<int, int>> q;
+      q.push(make_pair(a, 0));
+      // 放入起始层数并设置按下次数为0
+      while(q.size()) {
+          pair<int, int> p = q.front(); q.pop();
+          int y1 = p.first, y2 = p.second;
+          if(visit[y1]) continue;
+          visit[y1] = true;
+  	// 这里需要提防一手，判断一下是否曾经有经过这的同按下数，
+  	// 举个例子：有多个楼层都是在同一次按下按钮后到达，
+  	// 此时没有判断visit的同一层BFS会持续塞入同样的元素，
+  	// 累积下会造成MLE，因此此处需要额外判断
+          if(y1 == b) {
+              cout << y2 << "\n";
+              return 0;
+          }
+  	// 如果楼层到达则输出并跳出
+          int x = y1 + k[y1];
+          if(1 <= x && x <= n) {
+              q.push(make_pair(x, y2 + 1));
+          }
+  	// 向上时未超出范围就放入队列
+          x = y1 - k[y1];
+          if(1 <= x && x <= n) {
+              q.push(make_pair(x, y2 + 1));
+          }
+  	// 向下时未超出范围就放入队列
+      }
+      cout << "-1\n";
+      // 所有可能沿经楼层都已经访问完，
+      // 仍旧无法到达则输出-1
+      return 0;
+  }
+#+end_src
+
+*** DONE P1332 血色先锋队
 https://www.luogu.com.cn/problem/P1332
+#+begin_src cpp
+  // 我发现这种涉及坐标的题目真的很迷，
+  // x和y的含义是颠倒的，行和列也是难以区分的，
+  // 不擅长读题的很容易绕进去就WA了
 
-*** TODO P2802 回家
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  vector<int> dirs{0, 1, 0, -1, 0};
+
+  int main() {
+      int n, m, a, b;
+      cin >> n >> m >> a >> b;
+      vector<vector<int>> dp(n + 1, vector<int>(m + 1, INT_MAX));
+      // n为行数，m为列数，由此建立dp数组
+      queue<vector<int>> q;
+      for(int i = 0; i < a; i ++) {
+          int x, y; cin >> y >> x;
+  	// 根据输入输出样例以及输入输出格式，
+  	// 判断按纵坐标-横坐标格式读入，即y-x形式
+  	// 后续逻辑正常处理
+          q.push({y, x});
+          dp[y][x] = 0;
+          while(q.size()) {
+              vector<int> w = q.front(); q.pop();
+              y = w[0], x = w[1];
+              for(int i = 0; i < 4; i ++) {
+                  int cy = y + dirs[i], cx = x + dirs[i + 1];
+                  if(1 <= cy && cy <= n && 1 <= cx && cx <= m
+                    && dp[cy][cx] > dp[y][x] + 1) {
+                      dp[cy][cx] = dp[y][x] + 1;
+                      q.push({cy, cx});
+                  }
+              }
+  	    // 四个方向都做判断处理，
+  	    // 如果在范围内并比原先的值更小
+  	    // 则替换上去并放入队列，因为
+  	    // 后续路径可能存在更小的值
+          }
+      }
+      for(int i = 0; i < b; i ++) {
+          int x, y; cin >> y >> x;
+          cout << dp[y][x] << "\n";
+      }
+      // 按坐标读dp数组输出，原理相似
+      return 0;
+  }
+#+end_src
+
+*** DONE P2802 回家
 https://www.luogu.com.cn/problem/P2802
+#+begin_src cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  int dirs[5] = {0, 1, 0, -1, 0};
+
+  int main() {
+      int n, m; cin >> n >> m;
+      vector<vector<int>> v(n, vector<int>(m, 0));
+      vector<vector<int>> mx(n, vector<int>(m, 0));
+      // v存储输入，mx存储历史经过的最大hp
+      queue<vector<int>> q;
+      for(int i = 0; i < n; i ++) {
+          for(int j = 0; j < m; j ++) {
+              cin >> v[i][j];
+              if(v[i][j] == 2) {
+                  q.push(vector<int>{i, j, 6, 0});
+  		mx[j][i] = 6;
+  		// 遍历到起点则初始化，并设置当前最大hp
+              }
+          }
+      }
+      while(q.size()) {
+          vector<int> w = q.front(); q.pop();
+          int y = w[0], x = w[1], hp = w[2], step = w[3];
+          if(v[y][x] == 3) {
+              cout << step << "\n";
+              return 0;
+          }
+          // 到达家则输出步数（BFS上可认定为最短时间）
+          if(v[y][x] == 4) hp = 6;
+          // 到达鼠标处回满hp（在hp判断后补满，
+          // 防止死去后通过鼠标“复活”）
+          for(int i = 0; i < 4; i ++) {
+              int cy = y + dirs[i], cx = x + dirs[i + 1], newhp = hp - 1;
+              if(0 <= cy && cy < n && 0 <= cx && cx < m) {
+                  if(v[cy][cx] == 0) continue;
+                  // 新位置为障碍物，跳过
+                  if(newhp <= mx[cy][cx]) continue;
+  		mx[y][x] = hp;
+                  // 新hp小于过往的最大hp，可能存在重复
+                  // 或已经死去则跳过，否则更新最大hp
+                  q.push(vector<int>{cy, cx, newhp, step + 1});
+  		// 更新当前路径hp，方便后续路径对hp的判断
+  		// （不是太懂里面的原理，反正是方便判断）
+              }
+          }
+      }
+      cout << "-1\n";
+      return 0;
+  }
+#+end_src
